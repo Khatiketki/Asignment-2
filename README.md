@@ -1,51 +1,86 @@
-# Asignment-2
-Assignment 2: Naive CUDA GEMM Implementation 
+Name-Ketki Khati 
+NU ID-002436886 
+Assignment 2: Naive CUDA GEMM using Modal 
 Objective 
-The goal of this assignment is to implement a naive Generalized Matrix Multiplication 
-(GEMM) kernel using CUDA, without using high-level CUDA libraries such as cuBLAS or 
-cuDNN. The implementation must rely solely on global memory and support optional 
-transposition of input matrices. 
-Implementation Overview 
-A CUDA kernel was implemented to compute: 
+The goal of this assignment is to implement and evaluate a naive matrix multiplication 
+(GEMM) CUDA kernel and execute it on a GPU environment using Modal, since a local 
+NVIDIA GPU was not available. The implementation computes: 
 �
-� ←𝛼⋅𝑜𝑝(𝐴)⋅𝑜𝑝(𝐵)+𝛽⋅𝐶 
+� =𝐴×𝐵 
 where: 
-• 𝐴∈ℝ𝑚×𝑘 
-• 𝐵∈ℝ𝑘×𝑛 
-• 𝐶∈ℝ𝑚×𝑛 
-• 𝑜𝑝(𝐴)and 𝑜𝑝(𝐵)may be either the original matrix or its transpose 
-• 𝛼and 𝛽are scalar coefficients 
-Each CUDA thread computes one element of the output matrix C. The kernel uses a 2D grid 
-of 2D thread blocks, and all memory accesses are performed using global memory only, 
-as required. 
-No optimizations such as shared memory, tiling, or loop unrolling were applied. 
-Supported GEMM Variants 
-The kernel supports all required combinations: 
-• 𝐶←𝛼𝐴𝐵+𝛽𝐶 
-• 𝐶←𝛼𝐴𝑇𝐵+𝛽𝐶 
-• 𝐶←𝛼𝐴𝐵𝑇+𝛽𝐶 
-• 𝐶←𝛼𝐴𝑇𝐵𝑇+𝛽𝐶 
-The output matrix C is updated in place. 
+• 𝐴∈ℝ𝑀×𝐾 
+• 𝐵∈ℝ𝐾×𝑁 
+• 𝐶∈ℝ𝑀×𝑁 
+System & Environment 
+Local Machine 
+• OS: Windows 
+• GPU: Intel® Arc™ 130V (non-CUDA, not supported by NVIDIA CUDA) 
+• CUDA execution locally was not possible 
+Remote GPU via Modal 
+• Platform: Modal 
+• CUDA Version: 12.2 
+• GPUs used: 
+o NVIDIA A10 
+o NVIDIA L4 
+• Compiler: nvcc 
+• Execution: Remote GPU workers provisioned automatically by Modal 
+Implementation Details 
+CUDA Kernel 
+A naive GEMM CUDA kernel was implemented where: 
+• Each thread computes one element of matrix C 
+• No shared memory optimizations were used 
+• Kernel configuration: 
+o 2D grid 
+o 2D thread blocks 
 Correctness Verification 
-A CPU reference implementation of GEMM was used to verify correctness. The GPU results 
-are compared element-wise against the CPU output, and mismatches are reported. 
-Compilation 
-The code was compiled using the NVIDIA CUDA compiler: 
-nvcc -O2 -std=c++17 gemm_naive.cu -o gemm 
-Execution Environment 
-The local development machine is equipped with an Intel® Arc™ 130V GPU, which is not 
-CUDA-capable. CUDA requires an NVIDIA GPU and NVIDIA driver to execute kernels. 
-At runtime, the program checks for a CUDA-capable device using cudaGetDeviceCount(). 
-Since no NVIDIA GPU is present, the program exits gracefully with an informative message 
-indicating that no CUDA device is available. This behavior is expected and confirms correct 
-runtime error handling. 
-The implementation is expected to run correctly on any system with a CUDA-capable 
-NVIDIA GPU. 
+• GPU result is compared with a CPU reference implementation 
+• Maximum absolute error is reported 
+Execution via Modal 
+Because no CUDA-capable NVIDIA GPU was available locally, the code was executed 
+remotely using Modal. 
+Workflow 
+1. CUDA source file gemm_naive.cu was mounted to the Modal container 
+2. CUDA container image (nvidia/cuda:12.2.0-devel-ubuntu22.04) was used 
+3. Compilation performed inside Modal using nvcc 
+4. Execution performed on Modal GPU workers 
+5. Performance and correctness metrics recorded 
+Command used: 
+python -m modal run run_gemm_modal.py 
+Experimental Results 
+Matrix Size 
+• 𝑀=512 
+• 𝑁=512 
+• 𝐾=512 
+Run 1 
+• GPU: NVIDIA A10 
+• Kernel Time: 0.157696 ms 
+• Throughput: 1702.23 GFLOP/s 
+• Max Absolute Error: 9.53674 × 10⁻⁶ 
+Run 2 
+• GPU: NVIDIA L4 
+• Kernel Time: 0.164864 ms 
+• Throughput: 1628.22 GFLOP/s 
+• Max Absolute Error: 9.53674 × 10⁻⁶ 
+Discussion 
+• Both GPU executions produce numerically correct results, with very small 
+f
+loating-point error consistent with FP32 arithmetic. 
+• Performance differs slightly due to: 
+o Different GPU architectures (A10 vs L4) 
+o Different clock speeds and memory characteristics 
+• Despite being a naive kernel, the achieved throughput exceeds 1.6 TFLOP/s, 
+demonstrating the effectiveness of GPU parallelism. 
+• No shared memory or tiling optimizations were used; therefore, significant 
+performance improvements are possible with optimized kernels. 
+Challenges Faced 
+• CUDA could not be executed locally due to absence of an NVIDIA GPU 
+• Required setting up Modal authentication and remote execution 
+• File mounting and container compilation issues were resolved during development 
 Conclusion 
-This assignment successfully implements a naive CUDA GEMM kernel that: 
-• Uses only global memory 
-• Supports optional transposition of input matrices 
-• Updates the output matrix in place 
-• Includes proper error handling and correctness verification 
-The code adheres strictly to the assignment requirements and demonstrates correct use of 
-CUDA’s programming model. 
+This assignment successfully demonstrates: 
+• Implementation of a naive CUDA GEMM kernel 
+• Remote GPU execution using Modal 
+• Performance benchmarking on modern NVIDIA GPUs 
+• Validation of correctness against CPU results 
+The use of Modal enabled seamless access to CUDA-capable GPUs and allowed 
+successful completion of the assignment without local NVIDIA hardware. 
